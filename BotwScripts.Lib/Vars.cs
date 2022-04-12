@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace BotwScrips.Lib
+namespace BotwScripts.Lib
 {
     public class Vars
     {
@@ -8,6 +8,8 @@ namespace BotwScrips.Lib
 
         public static string ConfigPath { get; set; } = $"{GetEnv("localappdata")}\\mtk\\config.json";
 
+        public static string VersionPath { get; set; } = $"{GetEnv("localappdata")}\\mtk\\version.json";
+                                                                                                      
         public static string? GetEnv(string var) => Environment.GetEnvironmentVariable(var);
 
         public static dynamic GetConfig(string config)
@@ -21,6 +23,11 @@ namespace BotwScrips.Lib
                 return "1:GetConfig:Error - Settings returned null";
 
             return json[config];
+        }
+
+        public static bool CheckScriptVersion(string module)
+        {
+            var json = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(File.ReadAllText(ConfigPath));
         }
 
         // non-static
