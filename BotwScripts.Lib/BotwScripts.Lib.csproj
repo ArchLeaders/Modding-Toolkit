@@ -4,11 +4,30 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="AampLibraryCSharp">
+      <HintPath>Lib\AampLibraryCSharp.dll</HintPath>
+    </Reference>
     <Reference Include="Acheron.Web">
       <HintPath>..\..\..\..\..\Libraries\Acheron\Acheron.Web\bin\Debug\net6.0\Acheron.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="BfresLibrary">
+      <HintPath>External\BfresLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="ByamlExt">
+      <HintPath>Lib\ByamlExt.dll</HintPath>
+    </Reference>
+    <Reference Include="SARCExt">
+      <HintPath>Lib\SARCExt.dll</HintPath>
+    </Reference>
+    <Reference Include="Syroot.BinaryData">
+      <HintPath>Lib\Syroot.BinaryData.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Operations">
+      <HintPath>..\..\..\..\..\Libraries\Acheron\System.Operations\bin\Debug\net6.0\System.Operations.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>
