@@ -29,21 +29,53 @@ namespace BotwScripts.Lib
             return json[config];
         }
 
-        public static bool CheckScriptVersion(string module)
+        public static void UpdateScript(string module)
         {
+            // Find local script
+            string localScript = $"{StaticPath}\\Scripts\\{module}.py";
+
+            // Check local script
+            if (!File.Exists(localScript))
+            {
+                Update();
+                return;
+            }
+
             // Get local version database
             dynamic? localJson = LoadStatic("versions");
 
             // Get remote version database
             dynamic? remoteJson = LoadRemote("BotwScripts.Lib/versions.json");
 
+            if (localJson == null || remoteJson == null)
+                return;
+
+            string[] localVersion = ((string)localJson[module]).Split();
+            string[] remoteVersion = ((string)remoteJson[module]).Split();
+
+            // Check major
+            if (int.Parse(remoteVersion[0]) > int.Parse(localVersion[0]))
+                Update();
+
+            // Check mid
+            else if (int.Parse(remoteVersion[1]) > int.Parse(localVersion[1]))
+                Update();
+
+            // Check minor
+            else if (int.Parse(remoteVersion[2]) > int.Parse(localVersion[2]))
+                Update();
+
+            void Update()
+            {
+                GetRemote($"BotwScripts.Lib/Python/{module}.py").DownloadFile(localScript, true);
+            }
         }
 
         // non-static
 
         public Mtk()
         {
-            Config = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(File.ReadAllText(ConfigJson)) ?? new();
+            Config = LoadStatic("config") ?? new Dictionary<string, dynamic>();
 
             // set configs
             Python = Config["python"];
