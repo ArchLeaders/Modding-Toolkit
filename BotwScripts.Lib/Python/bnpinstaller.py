@@ -1,4 +1,4 @@
-﻿# python.exe bnpinstaller.py [true|false]
+﻿# python.exe bnpinstaller.py folder/mod.bnp [true|false]
 
 from bcml.install import install_mod, link_master_mod
 from pathlib import Path
