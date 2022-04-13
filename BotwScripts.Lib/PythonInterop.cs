@@ -9,10 +9,10 @@ namespace BotwScripts.Lib
 {
     public class PythonInterop
     {
-        public static void Call(string module, params string[] args)
+        public static async Task Call(string module, params string[] args, bool hidden = false)
         {
             Mtk.UpdateScript(module);
-            Execute.App($"{Mtk.GetConfig("python")}\\python.exe", $"\"{Mtk.StaticPath}\\Scripts\\{module}.py\" {string.Join(' ', args)}");
+            await Execute.App($"{Mtk.GetConfig("python")}\\python.exe", $"\"{Mtk.StaticPath}\\Scripts\\{module}.py\" {string.Join(' ', args)}", hidden: hidden, shellExecute: false);
         }
     }
 }
