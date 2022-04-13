@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Acheron.Web;
 
 namespace BotwScripts.Lib
 {
@@ -10,8 +11,7 @@ namespace BotwScripts.Lib
     {
         public Python(string module, string args = "", string func = "[RUN.PYTHON]")
         {
-            string download = $"https://raw.githubusercontent.com/ArchLeaders/BotwScrips/master/BotwScrips.Lib/Python/{module}.py";
-
+            Mtk.CheckScriptVersion(module);
         }
     }
 }
