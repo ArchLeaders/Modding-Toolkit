@@ -1,4 +1,5 @@
 ﻿using Acheron.Web;
+using System.Text;
 using System.Text.Json;
 
 namespace BotwScripts.Lib
@@ -8,31 +9,32 @@ namespace BotwScripts.Lib
         // static
         public static string StaticPath { get; set; } = $"{GetEnv("localappdata")}\\mtk";
         public static string RemotePath { get; set; } = $"https://raw.githubusercontent.com/ArchLeaders/Modding-Toolkit/master";
-        
-        public static dynamic? LoadStatic(string config) => JsonSerializer.Deserialize<dynamic>(File.ReadAllText(GetStatic(config)));
-        public static async Task<dynamic>? LoadRemote(string path) => await JsonSerializer.Deserialize<dynamic>(BitConverter.ToString(await GetRemote(path).GetBytes()));
+
+        public static TValue? LoadJson<TValue>(string json) => JsonSerializer.Deserialize<TValue>(json);
+        public static TValue? LoadJson<TValue>(byte[] json) => JsonSerializer.Deserialize<TValue>(json);
 
         public static string? GetEnv(string var) => Environment.GetEnvironmentVariable(var);
-        public static string GetStatic(string config) => $"{StaticPath}\\{config}.json";
+        public static string GetLocal(string config) => $"{StaticPath}\\{config}.json";
         public static string GetRemote(string path) => $"{RemotePath}/{path}";
 
-        public static dynamic GetConfig(string config)
+        public static JsonElement? GetConfig(string config)
         {
-            if (!File.Exists(GetStatic("config")))
-                return "0:GetConfig:Error - Config could not be found";
+            if (!File.Exists(GetLocal("config")))
+                return null;
 
-            dynamic? json = LoadStatic("config");
+            var json = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(File.ReadAllText(GetLocal("config")));
 
             if (json == null)
-                return "1:GetConfig:Error - Config returned null";
+                return null;
 
-            return json[config];
+            return (JsonElement)json[config];
         }
 
         public static void UpdateScript(string module)
         {
             // Find local script
             string localScript = $"{StaticPath}\\Scripts\\{module}.py";
+            string localVersions = GetLocal("versions");
 
             // Check local script
             if (!File.Exists(localScript))
@@ -41,17 +43,21 @@ namespace BotwScripts.Lib
                 return;
             }
 
+            // Check for local versions file
+            if (!File.Exists(localVersions))
+                GetRemote("BotwScripts.Lib/versions.json").DownloadFile(localVersions);
+
             // Get local version database
-            dynamic? localJson = LoadStatic("versions");
+            Dictionary<string, string>? localJson = LoadJson<Dictionary<string, string>>(File.ReadAllText(localVersions));
 
             // Get remote version database
-            dynamic? remoteJson = LoadRemote("BotwScripts.Lib/versions.json");
+            Dictionary<string, string>? remoteJson = LoadJson<Dictionary<string, string>>(GetRemote("BotwScripts.Lib/versions.json").GetBytes());
 
             if (localJson == null || remoteJson == null)
                 return;
 
-            string[] localVersion = ((string)localJson[module]).Split();
-            string[] remoteVersion = ((string)remoteJson[module]).Split();
+            string[] localVersion = localJson[module].Split('.');
+            string[] remoteVersion = remoteJson[module].Split('.');
 
             // Check major
             if (int.Parse(remoteVersion[0]) > int.Parse(localVersion[0]))
@@ -75,13 +81,13 @@ namespace BotwScripts.Lib
 
         public Mtk()
         {
-            Config = LoadStatic("config") ?? new Dictionary<string, dynamic>();
+            Config = LoadJson<Dictionary<string, JsonElement>>(GetLocal("config")) ?? new Dictionary<string, JsonElement>();
 
             // set configs
-            Python = Config["python"];
+            Python = Config["python"].GetString() ?? "";
         }
 
-        public Dictionary<string, dynamic> Config { get; set; } = new();
+        public Dictionary<string, JsonElement> Config { get; set; } = new();
 
         // loaded configs
         public string InstallPath { get; set; } = "";
