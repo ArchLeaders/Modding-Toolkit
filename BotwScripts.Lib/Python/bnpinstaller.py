@@ -19,6 +19,7 @@ def main():
     if remerge == True:
         link_master_mod()
 
+    input()
+
 if __name__ == '__main__':
     main()
-    input()
