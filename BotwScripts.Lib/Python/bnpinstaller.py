@@ -6,7 +6,7 @@ from sys import argv as args
 
 def main():
 
-    if len(args) > 3:
+    if len(args) >= 3:
         remerge: bool = args[2] == "true"
     else:
         remerge: bool = False
@@ -19,7 +19,6 @@ def main():
     if remerge == True:
         link_master_mod()
 
-    input()
 
 if __name__ == '__main__':
     main()
