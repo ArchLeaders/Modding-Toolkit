@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BotwScripts.Lib\BotwScripts.Lib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AampLibraryCSharp">
+      <HintPath>..\..\..\..\..\..\Botw\Tools\Model - Textures\Switch-Toolbox\Lib\Plugins\AampLibraryCSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="BfresLibrary">
+      <HintPath>C:\Users\ArchLeaders\Downloads\BfresLib\BfresLibrary\bin\Debug\net45\BfresLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="ByamlExt">
+      <HintPath>..\..\..\..\..\..\Botw\Tools\Model - Textures\Switch-Toolbox\Lib\ByamlExt.dll</HintPath>
+    </Reference>
+    <Reference Include="SARCExt">
+      <HintPath>..\..\..\..\..\..\Botw\Tools\Model - Textures\Switch-Toolbox\Lib\SARCExt.dll</HintPath>
+    </Reference>
+    <Reference Include="Syroot.BinaryData">
+      <HintPath>..\..\..\..\..\..\Botw\Tools\Model - Textures\Switch-Toolbox\Lib\Syroot.BinaryData.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Operations">
+      <HintPath>..\..\..\..\..\Libraries\Acheron\System.Operations\bin\Debug\net6.0\System.Operations.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

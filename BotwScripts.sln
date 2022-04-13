@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotwScripts.Lib", "BotwScripts.Lib\BotwScripts.Lib.csproj", "{9B8C3BF1-C4C4-4B25-B82C-F3D05B39A02E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotwScripts.Tests", "BotwScripts.Tests\BotwScripts.Tests.csproj", "{ADAD9BF9-4108-4915-B17F-5A5FE84032EC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{9B8C3BF1-C4C4-4B25-B82C-F3D05B39A02E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B8C3BF1-C4C4-4B25-B82C-F3D05B39A02E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9B8C3BF1-C4C4-4B25-B82C-F3D05B39A02E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADAD9BF9-4108-4915-B17F-5A5FE84032EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADAD9BF9-4108-4915-B17F-5A5FE84032EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADAD9BF9-4108-4915-B17F-5A5FE84032EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADAD9BF9-4108-4915-B17F-5A5FE84032EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
