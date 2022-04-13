@@ -5,4 +5,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Acheron.Web">
+      <HintPath>..\..\..\..\..\Libraries\Acheron\Acheron.Web\bin\Debug\net6.0\Acheron.Web.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>
