@@ -9,10 +9,10 @@ namespace BotwScripts.Lib
 {
     public class PythonInterop
     {
-        public PythonInterop(string module, params string[] args)
+        public static void Call(string module, params string[] args)
         {
             Mtk.UpdateScript(module);
-            Execute.App(Mtk.GetConfig("python"), $"{Mtk.StaticPath}\\Scripts\\{module}.py {string.Join(' ', args)}");
+            Execute.App($"{Mtk.GetConfig("python")}\\python.exe", $"\"{Mtk.StaticPath}\\Scripts\\{module}.py\" {string.Join(' ', args)}");
         }
     }
 }
