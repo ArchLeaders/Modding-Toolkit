@@ -6,7 +6,7 @@ from sys import argv as args
 
 def main():
 
-    if args.count() > 3:
+    if len(args) > 3:
         remerge: bool = args[2] == "true"
     else:
         remerge: bool = False
