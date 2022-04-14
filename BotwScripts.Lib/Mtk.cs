@@ -1,4 +1,5 @@
 ﻿using Acheron.Web;
+using System.Operations;
 using System.Text;
 using System.Text.Json;
 
@@ -15,6 +16,7 @@ namespace BotwScripts.Lib
 
         public static string? GetEnv(string var) => Environment.GetEnvironmentVariable(var);
         public static string GetLocal(string config) => $"{StaticPath}\\{config}.json";
+        public static string GetDynamic(string config, string folder = "Data") => $"{GetConfig("dynamic")}\\{folder}\\{config}";
         public static string GetRemote(string path) => $"{RemotePath}/{path}";
 
         public static JsonElement? GetConfig(string config)
@@ -27,14 +29,20 @@ namespace BotwScripts.Lib
             if (json == null)
                 return null;
 
-            return (JsonElement)json[config];
+            return (JsonElement)json[config.ToLower()];
         }
 
-        public static void UpdateScript(string module)
+        public static void UpdateScript(string module, string localPath = "%localappdata%\\mtk\\Scripts", string remotePath = "GetRemote():BotwScripts.Lib/Python")
         {
+            // Get the remote source
+            if (remotePath.Contains(':'))
+                remotePath = GetRemote(remotePath.Split(':')[1]);
+
+            // Reformat input paths
+            localPath = localPath.ParsePathVars();
+
             // Find local script
-            string localScript = $"{StaticPath}\\Scripts\\{module}.py";
-            string localVersions = GetLocal("versions");
+            string localScript = $"{localPath}\\{module}";
 
             // Check local script
             if (!File.Exists(localScript))
@@ -43,54 +51,42 @@ namespace BotwScripts.Lib
                 return;
             }
 
+            // Check the version
+            if (CheckUpdate(module))
+                Update();
+
+            void Update() => GetRemote($"{remotePath}/{module}.py").DownloadFile(localScript, true);
+        }
+
+        public static bool CheckUpdate(string key, int versionSections = 3)
+        {
+            string versions = GetLocal("versions");
+
             // Check for local versions file
-            if (!File.Exists(localVersions))
-                GetRemote("BotwScripts.Lib/versions.json").DownloadFile(localVersions);
+            if (!File.Exists(versions))
+                GetRemote("BotwScripts.Lib/versions.json").DownloadFile(versions);
 
             // Get local version database
-            Dictionary<string, string>? localJson = LoadJson<Dictionary<string, string>>(File.ReadAllText(localVersions));
+            Dictionary<string, string>? localJson = LoadJson<Dictionary<string, string>>(File.ReadAllText(versions));
 
             // Get remote version database
             Dictionary<string, string>? remoteJson = LoadJson<Dictionary<string, string>>(GetRemote("BotwScripts.Lib/versions.json").GetBytes());
 
             if (localJson == null || remoteJson == null)
-                return;
+                return false;
 
-            string[] localVersion = localJson[module].Split('.');
-            string[] remoteVersion = remoteJson[module].Split('.');
+            if (!localJson.ContainsKey(key))
+                GetRemote("BotwScripts.Lib/versions.json").DownloadFile(versions);
 
-            // Check major
-            if (int.Parse(remoteVersion[0]) > int.Parse(localVersion[0]))
-                Update();
+            if (!localJson.ContainsKey(key))
+                return false;
 
-            // Check mid
-            else if (int.Parse(remoteVersion[1]) > int.Parse(localVersion[1]))
-                Update();
+            bool CheckIndex(int indx) => int.Parse(remoteJson[key].Split('.')[indx]) > int.Parse(localJson[key].Split('.')[indx]);
 
-            // Check minor
-            else if (int.Parse(remoteVersion[2]) > int.Parse(localVersion[2]))
-                Update();
+            for (int i = 0; i < versionSections; i++)
+                if (CheckIndex(i)) return true;
 
-            void Update()
-            {
-                GetRemote($"BotwScripts.Lib/Python/{module}.py").DownloadFile(localScript, true);
-            }
+            return false;
         }
-
-        // non-static
-
-        public Mtk()
-        {
-            Config = LoadJson<Dictionary<string, JsonElement>>(GetLocal("config")) ?? new Dictionary<string, JsonElement>();
-
-            // set configs
-            Python = Config["python"].GetString() ?? "";
-        }
-
-        public Dictionary<string, JsonElement> Config { get; set; } = new();
-
-        // loaded configs
-        public string InstallPath { get; set; } = "";
-        public string Python { get; set; } = "";
     }
 }
