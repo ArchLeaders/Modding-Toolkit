@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace BotwScripts.Lib
 {
-    public class Mtk
+    public static class Mtk
     {
         // static
         public static string StaticPath { get; set; } = $"{GetEnv("localappdata")}\\mtk";
@@ -32,20 +32,16 @@ namespace BotwScripts.Lib
             return (JsonElement)json[config.ToLower()];
         }
 
-        public static void UpdateScript(string module, string localPath = "%localappdata%\\mtk\\Scripts", string remotePath = "GetRemote():BotwScripts.Lib/Python")
+        public static void UpdateExternal(string module, string localPath = "%localappdata%\\mtk\\Scripts", string remotePath = "BotwScripts.Lib/Python")
         {
-            // Get the remote source
-            if (remotePath.Contains(':'))
-                remotePath = GetRemote(remotePath.Split(':')[1]);
-
             // Reformat input paths
             localPath = localPath.ParsePathVars();
 
-            // Find local script
-            string localScript = $"{localPath}\\{module}";
+            // Find local path
+            localPath = $"{localPath}\\{module}";
 
             // Check local script
-            if (!File.Exists(localScript))
+            if (!File.Exists(localPath))
             {
                 Update();
                 return;
@@ -55,7 +51,7 @@ namespace BotwScripts.Lib
             if (CheckUpdate(module))
                 Update();
 
-            void Update() => GetRemote($"{remotePath}/{module}.py").DownloadFile(localScript, true);
+            void Update() => GetRemote($"{remotePath}/{module}").DownloadFile(localPath, true);
         }
 
         public static bool CheckUpdate(string key, int versionSections = 3)
@@ -87,6 +83,36 @@ namespace BotwScripts.Lib
                 if (CheckIndex(i)) return true;
 
             return false;
+        }
+
+        public static string GetRoot(this string path)
+        {
+            string[] valid = new string[]
+            {
+                "content",
+                "aoc",
+                "logs",
+                "patches"
+            };
+
+            foreach (var folder in valid)
+            {
+                DirectoryInfo dir = new(path);
+
+                // path..\
+                if (dir.Name == folder) return path.EditPath();
+
+                // path
+                else if (Directory.Exists($"{path}\\{folder}")) return path;
+
+                // path
+                else if (Directory.Exists($"{path}\\Build\\{folder}")) return path;
+
+                // path../
+                else if (Directory.Exists($"{path.SubFolder()}\\{folder}")) return path;
+            }
+
+            return "N/A";
         }
     }
 }
