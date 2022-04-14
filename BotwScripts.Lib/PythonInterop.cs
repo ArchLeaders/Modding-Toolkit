@@ -13,7 +13,7 @@ namespace BotwScripts.Lib
         public static async Task Call(string module, params string[] args)
         {
             Mtk.UpdateScript(module);
-            await Execute.App($"{Mtk.GetConfig("python")}\\python.exe", $"\"{Mtk.StaticPath}\\Scripts\\{module}.py\" {string.Join(' ', args)}", hidden: HideOutput, shellExecute: false);
+            await Execute.App($"{Mtk.GetConfig("python")}\\python.exe", $"\"{Mtk.StaticPath}\\Scripts\\{module}\" {string.Join(' ', args)}", hidden: HideOutput, shellExecute: false);
         }
     }
 }
