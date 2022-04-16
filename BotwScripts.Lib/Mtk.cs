@@ -19,17 +19,29 @@ namespace BotwScripts.Lib
         public static string GetDynamic(string config, string folder = "Data") => $"{GetConfig("dynamic")}\\{folder}\\{config}";
         public static string GetRemote(string path) => $"{RemotePath}/{path}";
 
-        public static JsonElement? GetConfig(string config)
+        public static JsonElement? GetConfig(string config, bool forceBcml = false)
         {
-            if (!File.Exists(GetLocal("config")))
-                return null;
+            // Load MTK config
+            if (File.Exists(GetLocal("config")) && !forceBcml)
+            {
+                var json = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(File.ReadAllText(GetLocal("config")));
 
-            var json = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(File.ReadAllText(GetLocal("config")));
+                if (json != null)
+                    if (json.ContainsKey(config.ToLower()))
+                        return (JsonElement)json[config.ToLower()];
+            }
 
-            if (json == null)
-                return null;
+            // Load BCML config
+            if (File.Exists($"%localappdata%\\bcml\\settings.json".ParsePathVars()))
+            {
+                var json = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(File.ReadAllText($"%localappdata%\\bcml\\settings.json".ParsePathVars()));
 
-            return (JsonElement)json[config.ToLower()];
+                if (json != null)
+                    if (json.ContainsKey(config.ToLower()))
+                        return (JsonElement)json[config.ToLower()];
+            }
+
+            return null;
         }
 
         public static void UpdateExternal(string module, string localPath = "%localappdata%\\mtk\\Scripts", string remotePath = "BotwScripts.Lib/Python")
@@ -83,36 +95,6 @@ namespace BotwScripts.Lib
                 if (CheckIndex(i)) return true;
 
             return false;
-        }
-
-        public static string GetRoot(this string path)
-        {
-            string[] valid = new string[]
-            {
-                "content",
-                "aoc",
-                "logs",
-                "patches"
-            };
-
-            foreach (var folder in valid)
-            {
-                DirectoryInfo dir = new(path);
-
-                // path..\
-                if (dir.Name == folder) return path.EditPath();
-
-                // path
-                else if (Directory.Exists($"{path}\\{folder}")) return path;
-
-                // path
-                else if (Directory.Exists($"{path}\\Build\\{folder}")) return path;
-
-                // path../
-                else if (Directory.Exists($"{path.SubFolder()}\\{folder}")) return path;
-            }
-
-            return "N/A";
         }
     }
 }
