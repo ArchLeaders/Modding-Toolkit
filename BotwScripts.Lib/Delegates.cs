@@ -38,5 +38,28 @@ namespace BotwScripts.Lib
 
             return user;
         }
+
+        public static bool Option(string ask)
+        {
+            Console.Write(ask);
+            ConsoleKeyInfo answer = Console.ReadKey();
+
+            while (answer.Key != ConsoleKey.Y && answer.Key != ConsoleKey.N)
+            {
+                Console.Write("\b \b");
+                answer = Console.ReadKey();
+            }
+
+            ConsoleKeyInfo consoleKey = Console.ReadKey();
+
+            while (consoleKey.Key != ConsoleKey.Enter)
+            {
+                Console.Write("\b \b");
+                consoleKey = Console.ReadKey();
+            }
+
+            Console.WriteLine();
+            return answer.Key == ConsoleKey.Y;
+        }
     }
 }
