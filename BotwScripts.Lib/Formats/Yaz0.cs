@@ -9,8 +9,8 @@ namespace BotwScripts.Lib.Formats
     public class Yaz0
     {
         //Compression could be optimized by using look-ahead.
-        public static unsafe byte[] Compress(string FileName, int level = 3, UInt32 res1 = 0, UInt32 res2 = 0) => Compress(File.ReadAllBytes(FileName), level, res1, res2);
-        public static unsafe byte[] Compress(byte[] Data, int level = 3, UInt32 reserved1 = 0, UInt32 reserved2 = 0)
+        public static unsafe byte[] Compress(string FileName, int level = 7, UInt32 res1 = 0, UInt32 res2 = 0) => Compress(File.ReadAllBytes(FileName), level, res1, res2);
+        public static unsafe byte[] Compress(byte[] Data, int level = 7, UInt32 reserved1 = 0, UInt32 reserved2 = 0)
         {
             int maxBackLevel = (int)(0x10e0 * (level / 9.0) - 0x0e0);
 
@@ -128,7 +128,7 @@ namespace BotwScripts.Lib.Formats
             return realresult;
         }
 
-        public static byte[] Decompress(string file) => Decompress(System.IO.File.ReadAllBytes(file));
+        public static byte[] Decompress(string file) => Decompress(File.ReadAllBytes(file));
         public static Stream DecompressToStream(string file)
         {
             byte[] decompressed = Decompress(File.ReadAllBytes(file));
