@@ -16,7 +16,7 @@ namespace BotwScripts.Lib
 
         public static string? GetEnv(string var) => Environment.GetEnvironmentVariable(var);
         public static string GetLocal(string config) => $"{StaticPath}\\{config}.json";
-        public static string GetDynamic(string config, string folder = "Data") => $"{GetConfig("dynamic")}\\{folder}\\{config}";
+        public static string GetDynamic(string config, string folder = "Data") => $"{GetConfig("dynamic").ToString() ?? StaticPath}\\{folder}\\{config}";
         public static string GetRemote(string path) => $"{RemotePath}/{path}";
 
         public static JsonElement? GetConfig(string config, bool forceBcml = false)
@@ -81,13 +81,13 @@ namespace BotwScripts.Lib
             Dictionary<string, string>? remoteJson = LoadJson<Dictionary<string, string>>(GetRemote("BotwScripts.Lib/versions.json").GetBytes());
 
             if (localJson == null || remoteJson == null)
-                return false;
+                return true;
 
             if (!localJson.ContainsKey(key))
                 GetRemote("BotwScripts.Lib/versions.json").DownloadFile(versions);
 
             if (!localJson.ContainsKey(key))
-                return false;
+                return true;
 
             bool CheckIndex(int indx) => int.Parse(remoteJson[key].Split('.')[indx]) > int.Parse(localJson[key].Split('.')[indx]);
 
