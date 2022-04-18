@@ -23,7 +23,7 @@ def main():
         new_actor = actor
 
     new_actor['bfres'] = partial_name
-    new_actor['instSize'] = S32(int(new_actor['instSize']) + hkrb)
+    new_actor['instSize'] = S32(new_actor['instSize']) + hkrb)
     new_actor['mainModel'] = full_name
     new_actor['name'] = full_name
     new_actor['profile'] = 'MapDynamicActive'
