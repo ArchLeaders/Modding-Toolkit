@@ -27,9 +27,11 @@ namespace BotwScripts.Lib.Formats
         public static ResFile LoadBfres(string bfresFile)
         {
             if (IsCompressed(bfresFile))
-                return new ResFile(new MemoryStream(Yaz0.Decompress(bfresFile)));
+                using (MemoryStream stream = new(Yaz0.Decompress(bfresFile)))
+                    return new ResFile(stream);
             else
-                return new ResFile(bfresFile);
+                using (MemoryStream stream = new(File.ReadAllBytes(bfresFile)))
+                    return new ResFile(stream);
         }
     }
 }
