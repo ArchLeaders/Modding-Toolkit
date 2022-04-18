@@ -75,24 +75,14 @@ namespace BotwScripts.Lib
                 if (args.Length == 2)
                 {
                     message = args[1];
-                    switch (args[0])
+                    Console.ForegroundColor = args[0] switch
                     {
-                        case "!warn":
-                            Console.ForegroundColor = ConsoleColor.DarkYellow;
-                            break;
-                        case "!error":
-                            Console.ForegroundColor = ConsoleColor.DarkRed;
-                            break;
-                        case "!notice":
-                            Console.ForegroundColor = ConsoleColor.Cyan;
-                            break;
-                        case "!good":
-                            Console.ForegroundColor = ConsoleColor.Green;
-                            break;
-                        default:
-                            Console.ForegroundColor = ConsoleColor.Blue;
-                            break;
-                    }
+                        "!warn" => ConsoleColor.DarkYellow,
+                        "!error" => ConsoleColor.DarkRed,
+                        "!notice" => ConsoleColor.Cyan,
+                        "!good" => ConsoleColor.Green,
+                        _ => ConsoleColor.Blue,
+                    };
                 }
             }
             
