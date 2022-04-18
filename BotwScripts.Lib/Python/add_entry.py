@@ -1,7 +1,7 @@
 # python add_entry.py actorinfo hkrbsize fullname partialname log
 
 from pathlib import Path
-from oead import byml, yaz0
+from oead import byml, yaz0, S32
 from sys import argv as args
 from zlib import crc32
 
@@ -23,7 +23,7 @@ def main():
         new_actor = actor
 
     new_actor['bfres'] = partial_name
-    new_actor['instSize'] = int(new_actor['instSize']) + hkrb
+    new_actor['instSize'] = S32(int(new_actor['instSize']) + hkrb)
     new_actor['mainModel'] = full_name
     new_actor['name'] = full_name
     new_actor['profile'] = 'MapDynamicActive'
