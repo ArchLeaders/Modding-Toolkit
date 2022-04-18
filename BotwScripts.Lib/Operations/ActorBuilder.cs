@@ -205,16 +205,16 @@ namespace BotwScripts.Lib.Operations
 
                 if (File.Exists($"{ModFolder}\\content\\Actor\\ActorInfo.product.sbyml"))
                 {
-                    await PythonInterop.Call("add_entry.py", $"\"{ModFolder}\\content\\Actor\\ActorInfo.product.sbyml\"", HKRBSize.ToString(), FullName, $"{PartialName}");
+                    await PythonInterop.Call("add_actorinfo_entry.py", $"\"{ModFolder}\\content\\Actor\\ActorInfo.product.sbyml\"", HKRBSize.ToString(), FullName, $"{PartialName}");
                 }
                 else if (File.Exists($"{ModFolder}\\logs\\actorinfo.yml"))
                 {
-                    await PythonInterop.Call("add_entry.py", $"\"{update}\\Actor\\ActorInfo.product.sbyml\"", HKRBSize.ToString(), FullName, $"{PartialName}", $"\"{ModFolder}\\logs\\actorinfo.yml\"");
+                    await PythonInterop.Call("add_actorinfo_entry.py", $"\"{update}\\Actor\\ActorInfo.product.sbyml\"", HKRBSize.ToString(), FullName, $"{PartialName}", $"\"{ModFolder}\\logs\\actorinfo.yml\"");
                 }
                 else
                 {
                     File.Copy($"{update}\\Actor\\ActorInfo.product.sbyml", $"{ModFolder}\\content\\Actor\\ActorInfo.product.sbyml");
-                    await PythonInterop.Call("add_entry.py", $"\"{ModFolder}\\content\\Actor\\ActorInfo.product.sbyml\"", HKRBSize.ToString(), FullName, $"{PartialName}");
+                    await PythonInterop.Call("add_actorinfo_entry.py", $"\"{ModFolder}\\content\\Actor\\ActorInfo.product.sbyml\"", HKRBSize.ToString(), FullName, $"{PartialName}");
                 }
 
             }));
