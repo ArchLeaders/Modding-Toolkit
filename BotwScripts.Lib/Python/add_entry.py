@@ -34,7 +34,7 @@ def main():
         if Path(log).is_file:
             byml.from_text(Path(log).read_text())
 
-        yaml_data[crc32(full_name)] = new_actor
+        yaml_data[crc32(full_name.encode())] = new_actor
         yaml_data = byml.to_text(yaml_data)
 
         Path(log).write_text(yaml_data)
@@ -42,7 +42,7 @@ def main():
     else:
 
         data['Actors'].append(new_actor)
-        data['Hashes'].append(crc32(full_name))
+        data['Hashes'].append(crc32(full_name.encode()))
 
         data = byml.to_binary(data)
         data = yaz0.compress(data)
