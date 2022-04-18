@@ -201,20 +201,19 @@ namespace BotwScripts.Lib.Operations
             edit.Add(Task.Run(async() =>
             {
                 // Handle in python because it's faster and just works better
-                Mtk.UpdateExternal("add_entry.py");
 
                 if (File.Exists($"{ModFolder}\\content\\Actor\\ActorInfo.product.sbyml"))
                 {
-                    await PythonInterop.Call("add_entry.py", $"{ModFolder}\\content\\Actor\\ActorInfo.product.sbyml", HKRBSize.ToString(), FullName, $"{PartialName}");
+                    await PythonInterop.Call("add_entry.py", $"\"{ModFolder}\\content\\Actor\\ActorInfo.product.sbyml\"", HKRBSize.ToString(), FullName, $"{PartialName}");
                 }
                 else if (File.Exists($"{ModFolder}\\logs\\actorinfo.yml"))
                 {
-                    await PythonInterop.Call("add_entry.py", $"{update}\\Actor\\ActorInfo.product.sbyml", HKRBSize.ToString(), FullName, $"{PartialName}", $"{ModFolder}\\logs\\actorinfo.yml");
+                    await PythonInterop.Call("add_entry.py", $"\"{update}\\Actor\\ActorInfo.product.sbyml\"", HKRBSize.ToString(), FullName, $"{PartialName}", $"\"{ModFolder}\\logs\\actorinfo.yml\"");
                 }
                 else
                 {
                     File.Copy($"{update}\\Actor\\ActorInfo.product.sbyml", $"{ModFolder}\\content\\Actor\\ActorInfo.product.sbyml");
-                    await PythonInterop.Call("add_entry.py", $"{ModFolder}\\content\\Actor\\ActorInfo.product.sbyml", HKRBSize.ToString(), FullName, $"{PartialName}");
+                    await PythonInterop.Call("add_entry.py", $"\"{ModFolder}\\content\\Actor\\ActorInfo.product.sbyml\"", HKRBSize.ToString(), FullName, $"{PartialName}");
                 }
 
             }));
