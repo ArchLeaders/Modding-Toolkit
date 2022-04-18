@@ -201,6 +201,7 @@ namespace BotwScripts.Lib.Operations
             edit.Add(Task.Run(async() =>
             {
                 // Handle in python because it's faster and just works better
+                print($"{Func} Adding ActorInfo entry . . .");
 
                 if (File.Exists($"{ModFolder}\\content\\Actor\\ActorInfo.product.sbyml"))
                 {
@@ -269,7 +270,7 @@ namespace BotwScripts.Lib.Operations
                         }
 
                         if (!found)
-                            print($"!warn||{Func} [WARNING] A model to satisfy the actor {FullName} could not be found in '{destBfres}'");
+                            print($"!warn||{Func} WARNING! A model to satisfy the actor {FullName} could not be found in '{destBfres}'");
                     }
 
                     using (var stream = File.OpenWrite(destBfres))
