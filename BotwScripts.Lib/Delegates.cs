@@ -27,6 +27,7 @@ namespace BotwScripts.Lib
     {
         public static string Input(string ask)
         {
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
             Console.Write(ask);
             var user = Console.ReadLine();
 
@@ -36,11 +37,13 @@ namespace BotwScripts.Lib
                 user = Console.ReadLine();
             }
 
+            Console.ForegroundColor = ConsoleColor.Gray;
             return user;
         }
 
         public static bool Option(string ask)
         {
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
             Console.Write(ask);
             ConsoleKeyInfo answer = Console.ReadKey();
 
@@ -58,8 +61,43 @@ namespace BotwScripts.Lib
                 consoleKey = Console.ReadKey();
             }
 
+            Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine();
             return answer.Key == ConsoleKey.Y;
+        }
+
+        public static void WriteLine(object message)
+        {
+            if (message.ToString().Contains("||"))
+            {
+                string[] args = message.ToString().Split("||", 2);
+
+                if (args.Length == 2)
+                {
+                    message = args[1];
+                    switch (args[0])
+                    {
+                        case "!warn":
+                            Console.ForegroundColor = ConsoleColor.DarkYellow;
+                            break;
+                        case "!error":
+                            Console.ForegroundColor = ConsoleColor.DarkRed;
+                            break;
+                        case "!notice":
+                            Console.ForegroundColor = ConsoleColor.Cyan;
+                            break;
+                        case "!good":
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            break;
+                        default:
+                            Console.ForegroundColor = ConsoleColor.Blue;
+                            break;
+                    }
+                }
+            }
+            
+            Console.WriteLine(message);
+            Console.ForegroundColor = ConsoleColor.Gray;
         }
     }
 }
