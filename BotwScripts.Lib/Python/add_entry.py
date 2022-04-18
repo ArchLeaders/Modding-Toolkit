@@ -16,7 +16,7 @@ def main():
     if is_log == True:
         log = args[5]
 
-    data = byml.from_binary(actorinfo.read_bytes())
+    data = byml.from_binary(yaz0.decompress(actorinfo.read_bytes()))
     new_actor = {}
 
     for actor in data['Actors']:
@@ -45,6 +45,7 @@ def main():
         data['Hashes'].append(crc32(full_name))
 
         data = byml.to_binary(data)
+        data = yaz0.compress(data)
         actorinfo.write_bytes(data)
 
 if __name__ == '__main__':
