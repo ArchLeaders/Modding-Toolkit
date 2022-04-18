@@ -1,16 +1,10 @@
 ﻿using AampLibraryCSharp;
-using AampLibraryCSharp.IO;
-using Acheron.Web;
 using BfresLibrary;
 using BotwScripts.Lib.Formats;
 using SARCExt;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Operations;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace BotwScripts.Lib.Operations
 {
@@ -23,13 +17,13 @@ namespace BotwScripts.Lib.Operations
         public string Func { get; set; }
 
         public string FullName { get; set; } = "FldObj_ActorBuilder_A_01";
+        public string PartialName { get; set; } = "FldObj_ActorBuilder_A";
         public string Prefix { get; set; } = "FldObj";
         public string LetterId { get; set; } = "A";
         public string NumaricId { get; set; } = "01";
 
         public long HKRBSize { get; private set; }
         public string ActorPack { get; private set; }
-        public string CafeResource { get; private set; }
         public int LifeCondition { get; private set; } = 500;
         public string? BaseActor { get; private set; } = null;
 
@@ -76,34 +70,40 @@ namespace BotwScripts.Lib.Operations
                 while (Name[Name.Length - 1] == '_')
                     Name = Name.Remove(Name.Length - 1);
 
-                FullName = $"{Prefix}_{Name}_{LetterId}_{NumaricId}";
+                PartialName = $"{Prefix}_{Name}_{LetterId}";
+                FullName = $"{PartialName}_{NumaricId}";
             }
 
             else Name = FullName;
 
-            CafeResource = $"{ModFolder}\\content\\Model\\{Prefix}_{Name}_{LetterId}";
             ActorPack = $"{ModFolder}\\content\\Actor\\Pack\\{FullName}.sbactorpack";
         }
 
         public async Task<Reporter> Contruct(Notify print, Option option, Input input)
         {
+            // TIMER
+            Stopwatch timer = new();
+            timer.Start();
+
             // Create data dirs
             Directory.CreateDirectory($"%temp%\\{FullName}".ParsePathVars());
             Directory.CreateDirectory($"{Root}\\Assets\\bin\\");
             Directory.CreateDirectory($"{Root}\\Build\\content\\");
 
             // REFERENCE
-            print($"{Func}");
+            // print($"{Func}");
 
             // Handle existing files/folders
             if (File.Exists(ActorPack) || Directory.Exists(ActorPack))
             {
+                timer.Stop();
                 if (option($"The actorpack '{FullName}' already exists. Overwrite it? "))
                 {
                     if (File.Exists(ActorPack)) File.Move(ActorPack, $"{Root}\\Assets\\bin\\{FullName}.bkp", true);
 
                     else Directory.Move(ActorPack, $"{Root}\\Assets\\bin\\{FullName}.bkp");
                 }
+                timer.Start();
             }
 
             // Find nearest HKRB match
@@ -131,10 +131,7 @@ namespace BotwScripts.Lib.Operations
             {
                 { "!dir__a", $"{ModFolder}\\content\\Actor\\Pack" },
                 { "!dir__b", $"{ModFolder}\\content\\Model" },
-                { $"{update}\\Actor\\ActorInfo.product.sbyml", $"{ModFolder}\\content\\Actor\\ActorInfo.product.sbyml" },
                 { $"{update}\\Actor\\Pack\\{BaseActor}.sbactorpack", ActorPack },
-                { $"{update}\\Model\\FldObj_HyruleFountain_A.sbfres", $"{CafeResource}.sbfres" },
-                { $"{game}\\Model\\FldObj_HyruleFountain_A.Tex1.sbfres", $"{CafeResource}.Tex1.sbfres" },
             };
 
             foreach (var dataSet in prep)
@@ -165,12 +162,14 @@ namespace BotwScripts.Lib.Operations
                 files.Add(file.Key, file.Value);
 
             // Get LifeCondition
+            timer.Stop();
             int lfConditionInt = 0;
             string lfConditionStr = input($"{Func} Enter the LifeCondition distance in meters: ");
+            timer.Start();
 
             while (!int.TryParse(lfConditionStr, out lfConditionInt))
             {
-                print($"{Func}[EXC] | '{lfConditionStr}' is invalid.");
+                print($"!error||{Func} [ERROR] | '{lfConditionStr}' is invalid.");
                 lfConditionStr = input($"{Func} Enter the LifeCondition distance in meters: ");
             }
 
@@ -198,50 +197,117 @@ namespace BotwScripts.Lib.Operations
                     edit.Add(BXML(file));
             }
 
-            // Await common edits
+            // Modfiy ActorInfo
+            edit.Add(Task.Run(async() =>
+            {
+                // Handle in python because it's faster and just works better
+                Mtk.UpdateExternal("add_entry.py");
+
+                if (File.Exists($"{ModFolder}\\content\\Actor\\ActorInfo.product.sbyml"))
+                {
+                    await PythonInterop.Call("add_entry.py", $"{ModFolder}\\content\\Actor\\ActorInfo.product.sbyml", HKRBSize.ToString(), FullName, $"{PartialName}");
+                }
+                else if (File.Exists($"{ModFolder}\\logs\\actorinfo.yml"))
+                {
+                    await PythonInterop.Call("add_entry.py", $"{update}\\Actor\\ActorInfo.product.sbyml", HKRBSize.ToString(), FullName, $"{PartialName}", $"{ModFolder}\\logs\\actorinfo.yml");
+                }
+                else
+                {
+                    File.Copy($"{update}\\Actor\\ActorInfo.product.sbyml", $"{ModFolder}\\content\\Actor\\ActorInfo.product.sbyml");
+                    await PythonInterop.Call("add_entry.py", $"{ModFolder}\\content\\Actor\\ActorInfo.product.sbyml", HKRBSize.ToString(), FullName, $"{PartialName}");
+                }
+
+            }));
+
+            // Add HKRB file
+            edit.Add(Task.Run(() =>
+            {
+                print($"{Func} Adding Havok RigidBodies . . .");
+                actorpack.Files.Add($"Physics/RigidBody/{PartialName}/{FullName}.hkrb", File.ReadAllBytes(HKRBPath));
+            }));
+
+            // Edit SBFRES files
+            // !! Needs to handle existing files !!
+            edit.Add(Task.Run(() =>
+            {
+                print($"{Func} Parsing Cafe Resources . . .");
+
+                Dictionary<string, KeyValuePair<string, string?>> resources = new()
+                {
+                    { $"{update}\\Model\\FldObj_HyruleFountain_A.sbfres", new(PartialName, FullName) },
+                    { $"{game}\\Model\\FldObj_HyruleFountain_A.Tex1.sbfres", new($"{PartialName}.Tex1", null) },
+                    { $"{update}\\Model\\FldObj_HyruleFountain_A.Tex2.sbfres", new($"{PartialName}.Tex2", null) },
+                };
+
+                foreach (var resource in resources)
+                {
+                    bool copied = false;
+                    string destBfres = $"{ModFolder}\\content\\Model\\{resource.Value.Key}.sbfres";
+
+                    if (!File.Exists(destBfres))
+                    {
+                        File.Copy(resource.Key, destBfres);
+                        copied = true;
+                    }
+
+
+                    ResFile res = Bfres.LoadBfres(destBfres);
+
+                    res.Name = resource.Value.Key;
+
+                    foreach (var model in res.Models)
+                    {
+                        bool found = false;
+
+                        if (copied)
+                        {
+                            model.Value.Name = resource.Value.Value ?? model.Value.Name;
+                            break;
+                        }
+                        else if (model.Value.Name == resource.Value.Value)
+                        {
+                            found = true;
+                        }
+
+                        if (!found)
+                            print($"!warn||{Func} [WARNING] A model to satisfy the actor {FullName} could not be found in '{destBfres}'");
+                    }
+
+                    using (var stream = File.OpenWrite(destBfres))
+                        res.Save(stream);
+                }
+            }));
+
+            // Await edit
             await Task.WhenAll(edit);
 
             // Create Life Condition
             if (!modifiedBLifeCondition)
                 await CreateBLifeCondition();
 
-            // Add HKRB file
-            print($"{Func} Adding Havok RigidBodies . . .");
-            actorpack.Files.Add($"Physics/RigidBody/{Prefix}_{Name}_{LetterId}/{FullName}.hkrb", File.ReadAllBytes(HKRBPath));
-
             // Write SARC file
             print($"{Func} Writing actorpack . . .");
             File.WriteAllBytes(ActorPack, Yaz0.Compress(SARC.PackN(actorpack).Item2, 9));
 
-            // Edit SBFRES files
-            // !! Needs to handle existing files !!
-            print($"{Func} Parsing Cafe Resources . . .");
-            ResFile res = Bfres.LoadBfres($"{CafeResource}.sbfres");
-            res.Models.RemoveAt(1);
-            res.Models[0].Name = FullName;
-            res.Name = $"{Prefix}_{Name}_{LetterId}";
-
-            res.Save($"{CafeResource}.sbfres");
-
-            res = Bfres.LoadBfres($"{CafeResource}.Tex1.sbfres");
-            res.Name = $"{Prefix}_{Name}_{LetterId}.Tex1";
-            res.Save($"{CafeResource}.Tex1.sbfres");
-
             // Return result
             Directory.Delete($"%temp%\\{FullName}".ParsePathVars(), true);
+
+            timer.Stop();
+            print($"{Func} Completed in {timer.ElapsedMilliseconds / 1000.0} seconds");
+
             return new("success");
 
             Task BModelList(KeyValuePair<string, byte[]> file)
             {
                 // Notify interface
-                print($"{Func} Modify binary model list (AAMP)");
+                print($"{Func} Modify binary model list (BMODELLIST) . . .");
 
                 // Parse bmodellist
                 AampFile bmodellist = AampFile.LoadFile(new MemoryStream(file.Value));
 
                 // Set model list data
                 bmodellist.RootNode.childParams[0].childParams[0].childParams[0].paramObjects[0].paramEntries[0].Value = new StringEntry(FullName);
-                bmodellist.RootNode.childParams[0].childParams[0].paramObjects[0].paramEntries[0].Value = new StringEntry($"{Prefix}_{Name}_{LetterId}");
+                bmodellist.RootNode.childParams[0].childParams[0].paramObjects[0].paramEntries[0].Value = new StringEntry($"{PartialName}");
                 bmodellist.Save($"%temp%\\{FullName}\\bmodellist.temp.io".ParsePathVars());
 
                 // Add model list file
@@ -255,7 +321,7 @@ namespace BotwScripts.Lib.Operations
             Task BLifeCondition(KeyValuePair<string, byte[]> file)
             {
                 // Notify interface
-                print($"{Func} Modify binary life condition (AAMP)");
+                print($"{Func} Modify binary life condition (BLIFECONDITION) . . .");
 
                 // Update creation status
                 modifiedBLifeCondition = true;
@@ -278,7 +344,7 @@ namespace BotwScripts.Lib.Operations
             Task CreateBLifeCondition()
             {
                 // Notify interface
-                print($"{Func} Create binary life condition (AAMP)");
+                print($"{Func} Create binary life condition (BLIFECONDITION) . . .");
 
                 // Check default.blifecondition
                 Mtk.UpdateExternal("Default.blifecondition", Mtk.GetConfig("dynamic") != null ? $"{Mtk.GetConfig("dynamic")}\\Data" : $"{Mtk.StaticPath}\\Data", "BotwScripts.Lib/Data");
@@ -300,7 +366,7 @@ namespace BotwScripts.Lib.Operations
             Task BPhysics(KeyValuePair<string, byte[]> file)
             {
                 // Notify interface
-                print($"{Func} Modify binary physics (AAMP)");
+                print($"{Func} Modify binary physics (BPHYSICS) . . .");
 
                 // Check HKX2.sbphysics
                 Mtk.UpdateExternal("HKX2.sbphysics", Mtk.GetConfig("dynamic") != null ? $"{Mtk.GetConfig("dynamic")}\\Data" : $"{Mtk.StaticPath}\\Data", "BotwScripts.Lib/Data");
@@ -310,7 +376,7 @@ namespace BotwScripts.Lib.Operations
 
                 // Update physics file
                 bphysics.RootNode.childParams[0].childParams[0].childParams[0].paramObjects[0].paramEntries[3].Value = new StringEntry(
-                    $"{Prefix}_{Name}_{LetterId}/{FullName}.hkrb");
+                    $"{PartialName}/{FullName}.hkrb");
                 bphysics.Save($"%temp%\\{FullName}\\bphysics.temp.io".ParsePathVars());
 
                 // Add physics file
@@ -324,7 +390,7 @@ namespace BotwScripts.Lib.Operations
             Task BXML(KeyValuePair<string, byte[]> file)
             {
                 // Notify interface
-                print($"{Func} Modify binary actor links (AAMP)");
+                print($"{Func} Modify binary actor links (BXML) . . .");
 
                 // Parse bxml
                 AampFile bxml = AampFile.LoadFile(new MemoryStream(file.Value));
